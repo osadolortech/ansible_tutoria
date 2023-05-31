@@ -3,10 +3,47 @@
   become: true
   tasks:
 
-  - name: install the apache2 package
-    apt:
-      name:
-        - apache2
-        - libapache2-mod-php
-      update_cache: yes
-      state: latest
+    - name: install the apache2 package
+      apt:
+        name:
+          - apache2
+          - libapache2-mod-php
+        update_cache: yes
+        state: latest
+
+- hosts: all
+  become: true
+  tasks:
+    - name: create simon user 
+      tags: always 
+      user:
+        name: simone
+        group: root
+    - name: add ssh key for simone
+      tags: always 
+      authorized_key:
+          user: simone
+          key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPfk/avsnNG1flJMaEzEz4ScFAdcBT6GiYhEtvLqeziu ansible"
+    - name: add sudoers file for simone 
+      tags: always
+      copy:
+          src: sudoer_simone
+          dest: /etc/sudoers.d/simone
+          owner: root
+          group: root
+          mode: 0440
+- hosts: workstations
+  become: true
+  tasks:
+    - name: install unzip
+      package:
+            name: unzip
+
+    - name: install teraform
+      unarchive:
+         src: https://releases.hashicorp.com/terraform/1.4.6/terraform_1.4.6_linux_amd64.zip
+         dest: /usr/local/bin
+         remote_src: yes
+         mode: 0755
+         owner: root
+         group: root
